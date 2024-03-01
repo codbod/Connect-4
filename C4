@@ -1,0 +1,198 @@
+#include <stdio.h>
+#include <stdbool.h>
+#include <ctype.h>
+
+#define ROWS 6
+#define COLUMNS 7
+
+char board[ROWS][COLUMNS];
+
+// Change this to 3, 4, or 5 based on player choice
+int tokens_to_win = 4; 
+
+//function to initialize the board
+void initializeBoard() {
+  for (int i = 0; i < ROWS; i++) {
+    for (int j = 0; j < COLUMNS; j++) {
+      board[i][j] = ' ';
+    }
+  }
+}
+
+//function to print out the connect 4 board
+void printBoard(){
+  printf(" 1 2 3 4 5 6 7\n");
+  for (int i = 0; i < ROWS; i++) {
+    printf("|");
+    for (int j = 0; j < COLUMNS; j++) {
+      printf("%c|", board[i][j]);
+    }
+    printf("\n");
+  }
+  printf("---------------\n");
+}
+
+int placeToken(int column, char player) {
+  // Check if the column is already full
+  if (board[0][column - 1] != ' ') {
+    printf("Column %d is already full. Choose another column.\n", column);
+    return 0;
+  }
+  // Find the first available row in the selected column
+  for (int i = ROWS - 1; i >= 0; i--) {
+    if (board[i][column - 1] == ' ') {
+      board[i][column - 1] = player;
+      return 1;
+    }
+  }
+  return 0; 
+}
+
+int checkWin(char player){
+  // Check horizontal
+  for (int i = 0; i < ROWS; i++) {
+    for (int j = 0; j < COLUMNS - 3; j++) {
+     if (board[i][j] == player &&
+         board[i][j + 1] == player &&
+         board[i][j + 2] == player &&
+         board[i][j + 3] == player) {
+         return 1; // Player has won horizontally
+      }
+    }
+  }
+    // Check vertical
+    for (int i = 0; i < ROWS - 3; i++) {
+      for (int j = 0; j < COLUMNS; j++) {
+        if (board[i][j] == player &&
+          board[i + 1][j] == player &&
+          board[i + 2][j] == player &&
+          board[i + 3][j] == player) {
+          return 1; // Player has won vertically
+        }
+      }
+    }
+    // Check diagonal (top-left to bottom-right)
+    for (int i = 0; i < ROWS - 3; i++) {
+      for (int j = 0; j < COLUMNS - 3; j++) {
+        if (board[i][j] == player &&
+          board[i + 1][j + 1] == player &&
+          board[i + 2][j + 2] == player &&
+          board[i + 3][j + 3] == player) {
+          return 1; // Player has won diagonally (top-left to bottom-right)
+        }
+      }
+    }
+    // Check diagonal (top-right to bottom-left)
+    for (int i = 0; i < ROWS - 3; i++) {
+      for (int j = 3; j < COLUMNS; j++) {
+        if (board[i][j] == player &&
+          board[i + 1][j - 1] == player &&
+          board[i + 2][j - 2] == player &&
+          board[i + 3][j - 3] == player) {
+          return 1; // Player has won diagonally (top-right to bottom-left)
+        }
+      }
+    }
+    return 0; // No win condition found
+}
+
+int checkDraw(){
+  for (int i = 0; i < ROWS; i++) {
+    for (int j = 0; j < COLUMNS; j++) {
+    // If any position on the board is still empty, the game is not a draw
+      if (board[i][j] == ' ') {
+        return 0;
+      }
+    }
+  }
+  // If no empty positions are found, the game is a draw
+  return 1;
+}
+
+// Clear the input buffer to remove invalid input
+void clearInputBuffer() {
+    int c;
+    while ((c = getchar()) != '\n' && c != EOF);
+}
+
+//when called allows for the user to play the game
+void PlayConnectFour(){
+  char red = 'r';
+  char yellow = 'y';
+  char currentPlayer = red;
+  int gameOver = 0;
+  int column;
+  
+  printf("Welcome to Connect Four!\n");
+  printf("Enter the number of tokens required to win (3, 4, or 5): ");
+  scanf("%d", &tokens_to_win);  //sets the number of tokens to win
+
+  initializeBoard();
+
+  while(!gameOver){
+    printBoard();
+    printf("%c to play. Pick a column (1-7): ", currentPlayer);
+    //scanf(" %d" , &column);
+
+    //checks that the input is a number
+    int inputResult = scanf("%d", &column);
+    if ((inputResult != 1) || (column < 1 || 7 < column)) {
+      printf("Invalid input\n");
+      clearInputBuffer(); // Clear the input buffer to remove invalid input
+      continue;
+    }
+/*
+    //checks if the input is between 1 and 7
+    if((column < 1 || 7 < column)){
+      printf("Invalid input\n");
+      continue;
+    }
+*/
+    if(placeToken(column, currentPlayer)){
+      //check win
+      if(checkWin(currentPlayer)){
+        printf("Congratulations! Player %c wins!\n", currentPlayer);
+        gameOver = 1;
+      }
+      //check draw
+      else if(checkDraw()){
+        printf("Its a tie!\n");
+        gameOver = 1;
+      }
+      //next turn 
+      else {
+        currentPlayer = (currentPlayer == red) ? yellow : red;
+      }
+    }
+  }
+}
+
+void replayGame(){
+  
+}
+
+int main() {
+  printf("Welcome to connect 4!\n");
+  printf("Press 'q' to quit or 'r' to replay or any other key to continue:");
+  char firstInput;
+  scanf("%c", &firstInput);
+
+  while(1){
+  //scanf("%c", &firstInput);
+    if (firstInput == 'q'){
+      break;
+    }
+    else if (firstInput == 'r'){
+      replayGame();
+    }
+    else{
+      PlayConnectFour();
+    }
+  clearInputBuffer();
+  printf("Welcome to connect 4!\n");
+  printf("Press 'q' to quit or 'r' to replay or any other key to continue: ");
+  scanf("%c", &firstInput);
+  }
+  printf("Bye Bye!");
+  return 0;
+} //end of main
